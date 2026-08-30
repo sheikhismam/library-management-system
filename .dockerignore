@@ -1,0 +1,28 @@
+# Build context exclusions for the Railway image.
+
+# Secrets / env (never baked into the image)
+**/.env
+**/.env.local
+**/.env.production
+
+# Git
+.git
+.gitignore
+
+# Python
+**/venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/*.sqlite3
+
+# Generated/uploaded media (persisted via the Railway volume, not the image)
+backend/media
+
+# Frontend build output (rebuilt inside the image at build time)
+frontend/dist
+frontend/node_modules
+
+# Machine-specific / log files
+*.log
+.gitignore-docker
