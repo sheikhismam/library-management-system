@@ -1,0 +1,48 @@
+# Python / Django
+*.pyc
+__pycache__/
+*.sqlite3
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Test / coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+
+# Environment & Secrets
+.env
+.env.local
+.env.production
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Media & Uploads (local demo data: covers, member photos, generated QR codes)
+media/
+
+# Ad-hoc, machine-specific verification scripts (hardcoded absolute paths)
+backend/check_settings.py
+backend/run_check.py
+backend/verify_django.py
+
+# Stray empty files at repo root (not part of the project)
+/npm
+/opencode
+
+# Node / Vite / Frontend
+node_modules/
+dist/
+.vite/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

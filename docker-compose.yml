@@ -1,0 +1,76 @@
+# ============================================================================
+# Single-URL production stack: nginx (SPA + reverse proxy) -> Django/gunicorn -> MySQL
+#
+# Public URL: http(s)://<SERVER_IP_OR_DOMAIN>/  serves the React app.
+# API is reachable at the SAME origin:  /api/v1/...
+# Media is served at:                    /media/...
+# Django static at:                      /static/...
+#
+# Steps:
+#   1. Create `backend/.env` from `backend/.env.production.example` (or set
+#      real env vars on the host). Never commit real secrets.
+#   2. Build the frontend with the public origin baked in:
+#        docker compose build --build-arg VITE_API_URL=https://<DOMAIN> frontend
+#      (or set it in the build args below).
+#   3. docker compose up -d
+#   4. docker compose exec backend python manage.py seed_data
+#
+# MySQL data and uploaded media live in named volumes, so they survive redeploys.
+# ============================================================================
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-library_db}
+      MYSQL_USER: ${DB_USER:-library_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?set a DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set a DB_ROOT_PASSWORD}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - media_volume:/app/media
+      - static_volume:/app/staticfiles
+    expose:
+      - "8000"
+    # Optional: first-run demo data
+    # command: ['sh','-c','python manage.py collectstatic --noinput && python manage.py migrate && python manage.py seed_data && gunicorn library_project.wsgi:application --bind 0.0.0.0:8000 --workers 3']
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Public origin where this stack is reachable; bake into the SPA.
+        - VITE_API_URL=${VITE_API_URL:-http://localhost}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - media_volume:/srv/mediafiles:ro
+      - static_volume:/srv/staticfiles:ro
+
+volumes:
+  mysql_data:
+  media_volume:
+  static_volume:
