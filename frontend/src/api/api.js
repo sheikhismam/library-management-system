@@ -1,7 +1,10 @@
 import axios from "axios";
 
-// Base API URL - will be overridden by Vite environment variables
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+// Base API URL - overridden by Vite environment variables.
+// In production the SPA and API share one origin (nginx proxies /api to Django),
+// so an unset VITE_API_URL means same-origin relative requests. The localhost
+// fallback below is for the Vite dev server only.
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : "http://127.0.0.1:8000");
 
 // Create axios instance with default config
 const api = axios.create({
