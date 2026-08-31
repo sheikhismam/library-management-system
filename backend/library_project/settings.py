@@ -31,6 +31,11 @@ CSRF_TRUSTED_ORIGINS = [
     h.strip() for h in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',') if h.strip()
 ]
 
+# The app is served through a TLS proxy (nginx/Railway edge). Trust the proxy's
+# X-Forwarded-Proto header so build_absolute_uri() emits https:// URLs for
+# uploaded media (covers, photos, QR images) - avoids mixed-content blocking.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

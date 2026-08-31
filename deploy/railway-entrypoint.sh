@@ -28,6 +28,11 @@ if [ "${RUN_SEED:-0}" = "1" ]; then
     python /app/manage.py seed_data
 fi
 
+if [ -n "${ADMIN_RESET_PASSWORD:-}" ]; then
+    echo "==> Resetting admin login password (deploy-time reset)"
+    python /app/manage.py shell -c "from django.contrib.auth import get_user_model; U=get_user_model(); u=U.objects.get(username='admin'); u.set_password('$ADMIN_RESET_PASSWORD'); u.save(); print('admin password reset')"
+fi
+
 echo "==> Collecting Django static files"
 python /app/manage.py collectstatic --noinput
 
