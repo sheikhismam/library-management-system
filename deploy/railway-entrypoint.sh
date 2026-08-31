@@ -23,6 +23,11 @@ mkdir -p /app/media /app/staticfiles
 echo "==> Applying Django migrations"
 python /app/manage.py migrate --noinput
 
+if [ "${RUN_SEED:-0}" = "1" ]; then
+    echo "==> Seeding demo data (RUN_SEED=1)"
+    python /app/manage.py seed_data
+fi
+
 echo "==> Collecting Django static files"
 python /app/manage.py collectstatic --noinput
 
